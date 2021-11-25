@@ -88,18 +88,17 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
                                 if time > resolution_time:
                                     to_send = [i, user_buffers[i][0][4]]
                                     num_user_msg_to_send.append(to_send)
-                                # else:
-                                #     user_buffers[i][j][2] = -1
-                                #     user_buffers[i][j][3] = resolution_time - time
+                                else:
+                                    user_buffers[i][j][2] = -1
+                                    user_buffers[i][j][3] = resolution_time - time
                             else:
                                 user_buffers[i][j][3] += 1
 
         if len(num_user_msg_to_send) == 1:
-            for i in range(len(user_buffers[num_user_msg_to_send[0][0]])):
-                if user_buffers[num_user_msg_to_send[0][0]][i][4] == num_user_msg_to_send[0][1]:
-                    sum_msg_out = sum_msg_out + 1
-                    come_and_out.append([user_buffers[num_user_msg_to_send[0][0]][i][1], time])
-                    user_buffers[num_user_msg_to_send[0][0]].pop(i)
+            if user_buffers[num_user_msg_to_send[0][0]][0][4] == num_user_msg_to_send[0][1]:
+                sum_msg_out = sum_msg_out + 1
+                come_and_out.append([user_buffers[num_user_msg_to_send[0][0]][0][1], time])
+                user_buffers[num_user_msg_to_send[0][0]].pop(0)
         to_send_tree = []
 
         if len(num_user_msg_to_send) > 1:
@@ -141,7 +140,9 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
             user_packets[user_msg[i]] = user_packets[user_msg[i]] + 1
             user_buffers[user_msg[i]].append([1, round(time + time_arr[t], 3), -1, 1, user_packets[user_msg[i]]]) # 1 - есть сообщение, time - номер слота возникновения, b = -1 - задержка
             t = t + 1
-
+        for i in range(len(user_buffers)):
+            for j in range(len(user_buffers[i])):
+                user_buffers[i][j][2] = user_buffers[i][j][2] + 1
         # print("user_buffers: " + str(user_buffers))
         # print("-------------------------------------")
         time = time + 1

@@ -3,7 +3,7 @@ import systems as sys
 import generators as gen
 
 
-K = 100  # число пользователей
+K = 10000  # число пользователей
 time = 100000  # количество окон
 L = 0.375
 alpha = 0.5
