@@ -4,23 +4,35 @@ import numpy as np
 import math
 
 
-def binary_tree(alpha, num_user_msg_to_send, time, to_send_tree):
+def binary_tree(alpha, num_user_msg_to_send, time, to_send_tree, preamb, q, level):
     down_ancestor = []
-    # if len(num_user_msg_to_send) == 4:
-    #     print(1)
     up_ancestor = []
     down_ancestor.clear()
     up_ancestor.clear()
     resolution_time = 0
-    for i in range(len(num_user_msg_to_send)):
-        p = random.random()
-        if p < alpha:
-            down_ancestor.append(num_user_msg_to_send[i])
-        else:
-            up_ancestor.append(num_user_msg_to_send[i])
+    G = int(len(preamb)/q)
+    trao = []
+    trao.append([])
+    for i in range(G):
+        trao[0].append([])
+    pr_counter = -1
+    for i in range(len(preamb)):
+        if preamb[i] > 1:
+            pr_counter += 1
+            for j in range(len(num_user_msg_to_send)):
+                if num_user_msg_to_send[j][2] == i:
+                    trao[level][pr_counter].append(num_user_msg_to_send[j])
+    for i in range(len(trao[level])):
+        for j in range(len(trao[level][i])):
+            p = random.random()
+            if p < alpha:
+                trao[level + 1][i]
+        down_ancestor.append(num_user_msg_to_send)
+    else:
+        up_ancestor.append(num_user_msg_to_send)
     if len(up_ancestor) > 1:
         resolution_time = time + 1
-        resolution_time, to_send_tree = binary_tree(alpha, up_ancestor, resolution_time, to_send_tree)
+        resolution_time, to_send_tree = binary_tree(alpha, up_ancestor, resolution_time, to_send_tree, preamb, q)
         if len(down_ancestor) == 0:
             resolution_time = resolution_time + 1
         if len(down_ancestor) == 1:
@@ -28,7 +40,7 @@ def binary_tree(alpha, num_user_msg_to_send, time, to_send_tree):
             to_send_tree.append([resolution_time, down_ancestor[0][0], down_ancestor[0][1]])
         if len(down_ancestor) > 1:
             resolution_time = resolution_time + 1
-            resolution_time, to_send_tree = binary_tree(alpha, down_ancestor, resolution_time, to_send_tree)
+            resolution_time, to_send_tree = binary_tree(alpha, down_ancestor, resolution_time, to_send_tree, preamb, q)
     if len(up_ancestor) == 1:
         resolution_time = time + 1
         to_send_tree.append([resolution_time, up_ancestor[0][0], up_ancestor[0][1]])
@@ -37,16 +49,17 @@ def binary_tree(alpha, num_user_msg_to_send, time, to_send_tree):
             to_send_tree.append([resolution_time, down_ancestor[0][0], down_ancestor[0][1]])
         else:
             resolution_time = resolution_time + 1
-            resolution_time, to_send_tree = binary_tree(alpha, down_ancestor, resolution_time, to_send_tree)
+            resolution_time, to_send_tree = binary_tree(alpha, down_ancestor, resolution_time, to_send_tree, preamb, q)
     if len(up_ancestor) == 0:
         resolution_time = time + 1
         up_ancestor = down_ancestor
         down_ancestor = []
-        resolution_time, to_send_tree = binary_tree(alpha, up_ancestor, resolution_time, to_send_tree)
+        resolution_time, to_send_tree = binary_tree(alpha, up_ancestor, resolution_time, to_send_tree, preamb, q)
 
     return resolution_time, to_send_tree
 
-def tree_splitting(lambda_in, N, cube, K, alpha):
+
+def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
     time = 0
     user_buffers = []
     msg_come = 0
@@ -58,8 +71,10 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
     lambda_g = 0
     tree_splitting_time = []
     resolution_time = 0
-    multiplicity =[]
-
+    multiplicity = []
+    preamb = []
+    for i in range(m):
+        preamb.append(0)
     for i in range(K):
         tree_splitting_time.append(0)
         multiplicity.append(0)
@@ -77,22 +92,25 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
                 for j in range(len(user_buffers[i])):
                     if math.floor(user_buffers[i][0][1]) == time - 1: # new packet
                         if time > resolution_time:
-                            to_send = [i, user_buffers[i][j][4]]
+                            b = random.randint(0, m-1)
+                            preamb[b] += 1
+                            to_send = [i, user_buffers[i][j][4], b]
                             num_user_msg_to_send.append(to_send)
                         else:
                             user_buffers[i][j][2] = -1
                             user_buffers[i][j][3] = resolution_time - time
-                    else:
-                        if user_buffers[i][j][3] - user_buffers[i][j][2] == 0:  # если истек
-                            if j == 0:
-                                if time > resolution_time:
-                                    to_send = [i, user_buffers[i][0][4]]
-                                    num_user_msg_to_send.append(to_send)
-                                else:
-                                    user_buffers[i][j][2] = -1
-                                    user_buffers[i][j][3] = resolution_time - time
+                    elif user_buffers[i][j][3] - user_buffers[i][j][2] == 0:  # если истек
+                        if j == 0:
+                            if time > resolution_time:
+                                b = random.randint(0, m-1)
+                                preamb[b] += 1
+                                to_send = [i, user_buffers[i][0][4], b]
+                                num_user_msg_to_send.append(to_send)
                             else:
-                                user_buffers[i][j][3] += 1
+                                user_buffers[i][j][2] = -1
+                                user_buffers[i][j][3] = resolution_time - time
+                        else:
+                            user_buffers[i][j][3] += 1
 
         if len(num_user_msg_to_send) == 1:
             if user_buffers[num_user_msg_to_send[0][0]][0][4] == num_user_msg_to_send[0][1]:
@@ -102,7 +120,9 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
         to_send_tree = []
 
         if len(num_user_msg_to_send) > 1:
-            resolution_time, to_send_tree = binary_tree(alpha, num_user_msg_to_send, time, to_send_tree)
+            for i in range(len(preamb)):
+                if preamb[i] > 1:
+                    resolution_time, to_send_tree = binary_tree(alpha, num_user_msg_to_send, time, to_send_tree, preamb, q, 0)
             # print(len(to_send_tree))
             if len(to_send_tree) < K:
                 tree_splitting_time[len(to_send_tree)-2] += resolution_time - time
@@ -145,6 +165,8 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
                 user_buffers[i][j][2] = user_buffers[i][j][2] + 1
         # print("user_buffers: " + str(user_buffers))
         # print("-------------------------------------")
+        for i in range(len(preamb)):
+            preamb[i] = 0
         time = time + 1
     sum_d = 0
     for i in range(len(come_and_out)):
@@ -176,12 +198,12 @@ def tree_splitting(lambda_in, N, cube, K, alpha):
     print("average delay = " + str(average_delay))
     print("average msg = " + str(average_msg))
     # print("user packets = " + str(user_packets))
-    print("tree_splitting_time = " + str(tree_splitting_time))
-    print("multiplicity = " + str(multiplicity))
+    # print("tree_splitting_time = " + str(tree_splitting_time))
+    # print("multiplicity = " + str(multiplicity))
     # print("out packets 1= " + str(len(come_and_out)))
     for i in range(len(multiplicity)):
         if multiplicity[i] > 10:
-            print("resolution time for " + str(i+2) +" collisions = " + str(tree_splitting_time[i] / multiplicity[i]))
+            print("resolution time for " + str(i+2) + " collisions = " + str(tree_splitting_time[i] / multiplicity[i]))
     # print("come and out = " + str(come_and_out))
     return average_msg, lambda_pr, lambda_out
 

@@ -3,10 +3,12 @@ import systems as sys
 import generators as gen
 
 
-K = 10000  # число пользователей
-time = 100000  # количество окон
+K = 100  # число пользователей
+time = 10000  # количество окон
 L = 0.375
 alpha = 0.5
+q_ary = 2
+preamb = 4
 
-# [x, y, z] = sys.tree_splitting(L, time, gen.generator(L), K, alpha)
-graph.graphics_tree_splitting(K, time)
+[x, y, z] = sys.tree_splitting(L, time, gen.generator(L), K, alpha, q_ary, preamb)
+# graph.graphics_tree_splitting(K, time)
