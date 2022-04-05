@@ -34,21 +34,21 @@ def binary_tree(alpha, num_user_msg_to_send, time, to_send_tree, preamb, q, leve
         resolution_time = time + 1
         resolution_time, to_send_tree = binary_tree(alpha, up_ancestor, resolution_time, to_send_tree, preamb, q)
         if len(down_ancestor) == 0:
-            resolution_time = resolution_time + 1
+            resolution_time += 1
         if len(down_ancestor) == 1:
-            resolution_time = resolution_time + 1
+            resolution_time += 1
             to_send_tree.append([resolution_time, down_ancestor[0][0], down_ancestor[0][1]])
         if len(down_ancestor) > 1:
-            resolution_time = resolution_time + 1
+            resolution_time += 1
             resolution_time, to_send_tree = binary_tree(alpha, down_ancestor, resolution_time, to_send_tree, preamb, q)
     if len(up_ancestor) == 1:
         resolution_time = time + 1
         to_send_tree.append([resolution_time, up_ancestor[0][0], up_ancestor[0][1]])
         if len(down_ancestor) == 1:
-            resolution_time = resolution_time + 1
+            resolution_time += 1
             to_send_tree.append([resolution_time, down_ancestor[0][0], down_ancestor[0][1]])
         else:
-            resolution_time = resolution_time + 1
+            resolution_time += 1
             resolution_time, to_send_tree = binary_tree(alpha, down_ancestor, resolution_time, to_send_tree, preamb, q)
     if len(up_ancestor) == 0:
         resolution_time = time + 1
@@ -114,7 +114,7 @@ def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
 
         if len(num_user_msg_to_send) == 1:
             if user_buffers[num_user_msg_to_send[0][0]][0][4] == num_user_msg_to_send[0][1]:
-                sum_msg_out = sum_msg_out + 1
+                sum_msg_out += 1
                 come_and_out.append([user_buffers[num_user_msg_to_send[0][0]][0][1], time])
                 user_buffers[num_user_msg_to_send[0][0]].pop(0)
         to_send_tree = []
@@ -131,7 +131,7 @@ def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
                 for j in range(len(user_buffers[to_send_tree[i][1]])):
                     if user_buffers[to_send_tree[i][1]][j][4] == to_send_tree[i][2]:
                         c = j
-                        sum_msg_out = sum_msg_out + 1
+                        sum_msg_out += 1
                         come_and_out.append([user_buffers[to_send_tree[i][1]][j][1], to_send_tree[i][0]])
                 user_buffers[to_send_tree[i][1]].pop(c)
 
@@ -139,12 +139,12 @@ def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
         p = random.random()
         cur_msg = gen.generate_msg(p, cube)
         time_arr = gen.get_time_array(cur_msg)
-        msg_come = msg_come + cur_msg
+        msg_come += cur_msg
         msg_in_system = 0
         for i in range(len(user_buffers)):
-            msg_in_system = msg_in_system + len(user_buffers[i])
+            msg_in_system += len(user_buffers[i])
         if K != 0:
-            sum_msg = sum_msg + msg_in_system + cur_msg
+            sum_msg += msg_in_system + cur_msg
         # print("cur_msg: " + str(cur_msg))
         user_msg = []
         if cur_msg <= K:
@@ -152,17 +152,17 @@ def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
         else:
             while cur_msg > K:
                 user_msg = random.sample(range(0, K), K)
-                cur_msg = cur_msg - K
+                cur_msg -= K
             user_msg = user_msg + random.sample(range(0, K), cur_msg)
         # print("msg is appeared from: " + str(user_msg))
         t = 0
         for i in range(len(user_msg)):
-            user_packets[user_msg[i]] = user_packets[user_msg[i]] + 1
+            user_packets[user_msg[i]] += 1
             user_buffers[user_msg[i]].append([1, round(time + time_arr[t], 3), -1, 1, user_packets[user_msg[i]]]) # 1 - есть сообщение, time - номер слота возникновения, b = -1 - задержка
             t = t + 1
         for i in range(len(user_buffers)):
             for j in range(len(user_buffers[i])):
-                user_buffers[i][j][2] = user_buffers[i][j][2] + 1
+                user_buffers[i][j][2] += 1
         # print("user_buffers: " + str(user_buffers))
         # print("-------------------------------------")
         for i in range(len(preamb)):
@@ -170,7 +170,7 @@ def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
         time = time + 1
     sum_d = 0
     for i in range(len(come_and_out)):
-        sum_d = sum_d + come_and_out[i][1] - come_and_out[i][0] + 1
+        sum_d += come_and_out[i][1] - come_and_out[i][0] + 1
     # if (len(user_buffers) != 0):
     #     for k in range(len)
     if (len(come_and_out)) == 0:
@@ -188,7 +188,7 @@ def tree_splitting(lambda_in, N, cube, K, alpha, q, m):
     for i in range(len(user_out)):
         out = out + user_out[i]
         ti = ti + (user_out[i]/N)
-        lambda_g = lambda_g + (user_packets[i] / N)
+        lambda_g += user_packets[i] / N
     # resol_mult_time = tree_splitting_time[0]/multiplicity[0]
     print("--------------------------")
     # print("cube = " + str(cube))
