@@ -15,7 +15,7 @@ def generator(lambda_in):
         else:
             cube.append(cube[len(cube) - 1] + value)
         i += 1
-    return cube;
+    return cube
 
 def generate_msg(p, cube):
     for i in range(len(cube)):
