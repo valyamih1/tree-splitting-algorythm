@@ -1,6 +1,6 @@
 import random
 import generators as gen
-import numpy as np
+# import numpy as np
 import math
 import statistics
 import pprint
@@ -77,18 +77,23 @@ def theory(N, q, M, G):
     Pl = []
     C = []
     R = 1
+    T = []
     for m in range(1, 11):
         Ps.append((1-(1/(G*q**m)))**(N-1))
         if m > 1:
             Pl.append(Ps[m-1] - Ps[m-2])
+
         C.append(((G*q**m)*(1-(1-(1/(G*q**m)))**N)) - (N*((1-(1/(G*q**m)))**(N-1))))
         R += math.ceil(C[m-1]/G)
-    print(Ps)
-    print(Pl)
-    Po = 1 - np.sum(Pl)
-    print(Po)
-    print(C)
-    print(R)
+
+    print(f'Ps = {Ps}')
+    print(f'Pl = {Pl}')
+    Po = 1 - math.fsum(Pl)
+    T.append(1 + math.log((N - 1) / G, M) - (0.5 + (0.5772 / math.log(M))) + (1 / (2 * N * math.log(M))))
+    print(f'Po = {Po}')
+    print(f'C = {C}')
+    print(f'R = {R}')
+    print(f'T = {T}')
 
 
 def tree_splitting(K, q, m):
@@ -113,7 +118,7 @@ def tree_splitting(K, q, m):
         preamb[b] += 1
         user_buffers.append([i, b, time, num_pr_transmissions])
     pr_counter = -1
-    print(preamb)
+    print(f'preamb = {preamb}')
     for i in range(len(preamb)):
         if preamb[i] > 1:
             pr_counter += 1
@@ -131,8 +136,8 @@ def tree_splitting(K, q, m):
     # stats.print_stats()
     # print(resolved_users)
     users = [i[0][2] for i in resolved_users]
-    print(len(resolved_users))
-    print(statistics.mean(users))
+    print(f'Number of resolved users = {len(resolved_users)}')
+    print(f'Mean number of users = {statistics.mean(users)}')
     # for i in range(len(trao)):
     #     for j in range(len(trao[i])):
     #         if len(trao[i][j]) != 0:
