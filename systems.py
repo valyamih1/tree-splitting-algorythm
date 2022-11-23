@@ -1,9 +1,11 @@
 import random
 import generators as gen
-import numpy as np
+# import numpy as np
 import math
 import statistics
 import pprint
+import cProfile
+import pstats
 
 
 def binary_tree(resolved_users, rao, preamb, q, level, outage):
@@ -11,7 +13,7 @@ def binary_tree(resolved_users, rao, preamb, q, level, outage):
     trao = []
     num_of_used_preamb = 0
     is_resolved = False
-    new_rao =[]
+    new_rao = []
     # if level == 0:
     for i in range(len(rao)):
         if len(rao[i]) != 0:
@@ -58,7 +60,7 @@ def binary_tree(resolved_users, rao, preamb, q, level, outage):
                 is_resolved = False
                 new_rao.append(trao[i][j])
     if is_resolved:
-        pprint.pprint(trao, width=30)
+        # pprint.pprint(trao, width=30)
         return trao, outage, resolved_users
     else:
         if (math.ceil(num_of_levels / (G*q))) > 1:
@@ -68,6 +70,30 @@ def binary_tree(resolved_users, rao, preamb, q, level, outage):
         else:
             trao, outage, resolved_users = binary_tree(resolved_users, new_rao, preamb, q, level + 1, outage)
         return trao, outage, resolved_users
+
+
+def theory(N, q, M, G):
+    Ps = []
+    Pl = []
+    C = []
+    R = 1
+    T = []
+    for m in range(1, 11):
+        Ps.append((1-(1/(G*q**m)))**(N-1))
+        if m > 1:
+            Pl.append(Ps[m-1] - Ps[m-2])
+
+        C.append(((G*q**m)*(1-(1-(1/(G*q**m)))**N)) - (N*((1-(1/(G*q**m)))**(N-1))))
+        R += math.ceil(C[m-1]/G)
+
+    print(f'Ps = {Ps}')
+    print(f'Pl = {Pl}')
+    Po = 1 - math.fsum(Pl)
+    T.append(1 + math.log((N - 1) / G, M) - (0.5 + (0.5772 / math.log(M))) + (1 / (2 * N * math.log(M))))
+    print(f'Po = {Po}')
+    print(f'C = {C}')
+    print(f'R = {R}')
+    print(f'T = {T}')
 
 
 def tree_splitting(K, q, m):
@@ -83,6 +109,7 @@ def tree_splitting(K, q, m):
     # r = []
     # for i in range(K):
     #     r.append(int(10*random.uniform(0, (q/10))))
+    theory(K, q, m, G)
     for i in range(m):
         preamb.append(0)
         rao.append([])
@@ -91,7 +118,7 @@ def tree_splitting(K, q, m):
         preamb[b] += 1
         user_buffers.append([i, b, time, num_pr_transmissions])
     pr_counter = -1
-    print(preamb)
+    print(f'preamb = {preamb}')
     for i in range(len(preamb)):
         if preamb[i] > 1:
             pr_counter += 1
@@ -102,10 +129,15 @@ def tree_splitting(K, q, m):
             for j in range(len(user_buffers)):
                 if user_buffers[j][1] == i:
                     resolved_users.append(user_buffers[j])
+    # with cProfile.Profile() as pr:
     trao, outage, resolved_users = binary_tree(resolved_users, rao, preamb, q, 0, outage)
-    print(resolved_users)
-    print(len(resolved_users))
-
+    # stats = pstats.Stats(pr)
+    # stats.sort_stats(pstats.SortKey.TIME)
+    # stats.print_stats()
+    # print(resolved_users)
+    users = [i[0][2] for i in resolved_users]
+    print(f'Number of resolved users = {len(resolved_users)}')
+    print(f'Mean number of users = {statistics.mean(users)}')
     # for i in range(len(trao)):
     #     for j in range(len(trao[i])):
     #         if len(trao[i][j]) != 0:

@@ -1,4 +1,3 @@
-import numpy
 import matplotlib.pyplot as plt
 import systems as sys
 import generators as gen
@@ -29,7 +28,6 @@ def graphics_tree_splitting(K, time):
     plt.ylabel('Выходная интенсивность')
     plt.grid(True)
     plt.legend()
-    # plt.title('aloha: average out')
     plt.show()
-
+    # plt.title('aloha: average out')
     # plt.show()
