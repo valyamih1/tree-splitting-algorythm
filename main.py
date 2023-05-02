@@ -1,6 +1,7 @@
-import dts
+import tree_RACH
 import matplotlib.pyplot as plt
 import sys
+import DTS_RACH
 
 
 sys.setrecursionlimit(1000000)
@@ -11,8 +12,8 @@ preamb = 54
 #     for j in q_ary:
 #         dts.tree_splitting(i, j, preamb)
 
-# dts.tree_splitting(K, q_ary, preamb)
-
+# tree_RACH.tree_splitting(K, q_ary, preamb)
+DTS_RACH.dynamic_tree_splitting()
 ### hardcoded values from working script in PyPy, just to make plots in CPython ###
 transm_6 = [3.417, 4.3392, 4.7341, 5.1317, 5.3583]
 transm_9 = [3.112, 3.8168, 4.1402, 4.4556, 4.6156]
@@ -24,11 +25,11 @@ total_trao_18 = [143, 735, 1391, 2988, 4761]
 plt.figure(1)
 
 # plt.plot(K, transm_rao, label='10 RAO', marker=("."), linewidth=2, markersize=7)
-plt.plot(K, total_trao_6, label='TRAO, q = 6', marker=("."), linewidth=2, markersize=7)
-plt.plot(K, total_trao_9, label='TRAO, q = 9', marker=("."), linewidth=2, markersize=7)
-plt.plot(K, total_trao_18, label='TRAO, q = 18', marker=("."), linewidth=2, markersize=7)
-plt.xlabel('Количество абонентов')
-plt.ylabel('Количество TRAO')
+plt.plot(K, total_trao_6, label='TRAO, q = 6', marker=".", linewidth=2, markersize=7, linestyle='-.')
+plt.plot(K, total_trao_9, label='TRAO, q = 9', marker=".", linewidth=2, markersize=7, linestyle=':')
+plt.plot(K, total_trao_18, label='TRAO, q = 18', marker=".", linewidth=2, markersize=7, linestyle='--')
+plt.xlabel('Number of devices')
+plt.ylabel('Number of TRAO')
 plt.grid(True)
 plt.legend()
 plt.show()

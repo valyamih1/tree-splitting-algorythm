@@ -117,8 +117,12 @@ def tree_splitting(total_users, q_ary, total_preambs):
     resolved_users, num_of_trao = tree_realisation(future_contentions, q_ary, G, num_of_used_preambs, initial_trao, num_of_trao, resolved_users, new_num_of_trao)
     # print(f'resolved users = {resolved_users}')
     mean_time = 0
+    max_time = 0
     for i in range(len(resolved_users)):
         mean_time += resolved_users[i][0][1]
+        if resolved_users[i][0][1] >= max_time:
+            max_time = resolved_users[i][0][1]
 
-    print(f'\ntotal users = {total_users} \nq-ary = {q_ary} \ntotal number of TRAO = {num_of_trao} \nmean number of transmission = {mean_time / total_users} \n -----------------')
+    print(f'\ntotal users = {total_users} \nq-ary = {q_ary} \ntotal number of TRAO = {num_of_trao} \n'
+          f'mean number of transmission = {mean_time / total_users} \nmax transmissions = {max_time} \n---------------')
 
