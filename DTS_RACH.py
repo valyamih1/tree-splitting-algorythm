@@ -51,13 +51,14 @@ def first_access_attempt():
         idle_probability[i].append(pow(1 - 1 / M, distibution_n_i[i]))
         collision_probability[i].append(1 - success_probability[i][0] - idle_probability[i][0])
         successful_requests[i].append(M * success_probability[i][0])
-        collided_preambles[i].append((round(M * collision_probability[i][0]), 1))
-        collided_requests[i].append((round(distibution_n_i[i] - successful_requests[i][0]), 1))
+        collided_preambles[i].append((round(M * collision_probability[i][0]), i))
+        collided_requests[i].append((round(distibution_n_i[i] - successful_requests[i][0]), i))
     return collided_preambles, collided_requests
 
 
 
 def dynamic_tree_splitting():
+    mc, nc = first_access_attempt()
     for i in range(max_rao):
         cc.append([])
         b.append([])
@@ -66,21 +67,24 @@ def dynamic_tree_splitting():
         G.append([])
         for k in range(k_max):
             cc[i].append(-1)
-            b[i].append(-1)
-            T[i].append(-1)
-            g[i].append(-1)
-            G[i].append(-1)
-    mc, nc = first_access_attempt()
+            b[i].append(0)
+            T[i].append(0)
+            g[i].append(0)
+            G[i].append(0)
+            mc[i].append((0, 0))
+            nc[i].append((0, 0))
+    print(mc)
     for i in range(max_rao):
         for k in range(k_max):
-            if mc[i][k] == 0:
+            if mc[i][k][0] == 0:
                 break
             else:
                 if mc[i][k][0] >= 1:
-                    cc[i][k] = math.floor(nc[i][k][0]/mc[i][k][0])
+                    cc[i][k] = math.floor(nc[i][k][0] / mc[i][k][0])
                 else:
                     cc[i][k] = 0
-
+                if cc[i][k] == 0:
+                    break
                 if M % cc[i][k] == 0:
                     b[i][k] = math.floor(cc[i][k])
                 elif M % cc[i][k] > 0:
@@ -88,12 +92,20 @@ def dynamic_tree_splitting():
                 else:
                     b[i][k] = 0
 
-                G[i][k] = M/b[i][k-1]
-                for m in range(mc[i][k]):
+                M_i_k = mc[i][k][0] * b[i][k]
+                L_i_k = math.ceil(M_i_k/M)
+                secondary_success_probability = (nc[i][k][0] / M_i_k) * pow(1 - 1 / M_i_k, nc[i][k][0] - 1)
+                secondary_idle_probability = pow(1 - 1 / M_i_k, nc[i][k][0])
+                secondary_collision_probability = 1 - secondary_success_probability - secondary_idle_probability
+                secondary_successful_devices = M_i_k * secondary_success_probability
+                secondary_collided_preambles = M_i_k * secondary_collision_probability
+                secondary_collided_devices = nc[i][k][0] - secondary_successful_devices
+                G[i][k + 1] = M/b[i][k]
+                for m in range(mc[i][k][0]):
                     if i <= T_a:
                         T[i][k] = i + T_a
                     else:
                         T[i][k] = i + 1
-                    for r in G[i][k]:
-                        if len(r) < 1:
-                            g[m] = r
+                    # for r in G[i][k]:
+                    #     if len(r) < 1:
+                    #         g[m] = r
