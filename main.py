@@ -2,15 +2,32 @@ import tree_RACH
 import matplotlib.pyplot as plt
 import sys
 import DTS_RACH
-
+import numpy as np
 
 sys.setrecursionlimit(1000000)
-K = [1000, 5000, 10000, 20000, 30000]  # число пользователей
-q_ary = [6, 9, 18]
+# K = [1000, 5000, 10000, 20000, 30000]  # число пользователей
+# K = [1, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76, 81, 86, 91, 96, 101]
+K = np.arange(1, 20007, 50)
+q_ary = 18
+    # , 9, 18]
 preamb = 54
+delay = []
+with open('delay with 1 to 20000 devices, step 50.txt') as f:
+    lines = f.read()
+delay = lines.split(', ')
+delays = []
+for i in delay:
+    delays.append(float(i))
+# K = []
+# for i in range(1, 2502, 5):
+#     K.append(i)
+# print(K)
 # for i in K:
-#     for j in q_ary:
-#         dts.tree_splitting(i, j, preamb)
+#     print(i)
+#     mean_delay = 0
+#     for j in range(500):
+#         mean_delay += tree_RACH.tree_splitting(i, q_ary, preamb)
+#     delay.append(48*mean_delay/500)
 
 # tree_RACH.tree_splitting(K, q_ary, preamb)
 DTS_RACH.dynamic_tree_splitting()
@@ -25,9 +42,9 @@ total_trao_18 = [143, 735, 1391, 2988, 4761]
 plt.figure(1)
 
 # plt.plot(K, transm_rao, label='10 RAO', marker=("."), linewidth=2, markersize=7)
-plt.plot(K, total_trao_6, label='TRAO, q = 6', marker=".", linewidth=2, markersize=7, linestyle='-.')
-plt.plot(K, total_trao_9, label='TRAO, q = 9', marker=".", linewidth=2, markersize=7, linestyle=':')
-plt.plot(K, total_trao_18, label='TRAO, q = 18', marker=".", linewidth=2, markersize=7, linestyle='--')
+plt.plot(K, delays, label='TRAO, q = 6', marker=".", linewidth=2, markersize=7, linestyle='-.')
+# plt.plot(K, total_trao_9, label='TRAO, q = 9', marker=".", linewidth=2, markersize=7, linestyle=':')
+# plt.plot(K, total_trao_18, label='TRAO, q = 18', marker=".", linewidth=2, markersize=7, linestyle='--')
 plt.xlabel('Number of devices')
 plt.ylabel('Number of TRAO')
 plt.grid(True)

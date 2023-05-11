@@ -123,6 +123,6 @@ def tree_splitting(total_users, q_ary, total_preambs):
         if resolved_users[i][0][1] >= max_time:
             max_time = resolved_users[i][0][1]
 
-    print(f'\ntotal users = {total_users} \nq-ary = {q_ary} \ntotal number of TRAO = {num_of_trao} \n'
-          f'mean number of transmission = {mean_time / total_users} \nmax transmissions = {max_time} \n---------------')
-
+    # print(f'\ntotal users = {total_users} \nq-ary = {q_ary} \ntotal number of TRAO = {num_of_trao} \n'
+    #       f'mean number of transmission = {mean_time / total_users} \nmax transmissions = {max_time} \n---------------')
+    return mean_time / total_users
