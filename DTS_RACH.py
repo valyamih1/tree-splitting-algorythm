@@ -3,24 +3,23 @@ import random
 from scipy import integrate
 # from scipy.stats import beta as bt
 
-max_rao = 52
-k_max = 7
-mc = []
-cc = []
-nc = []
-M = 54
-b = []
-T = []
-G = []
-g = []
+max_rao = 50
+k_max = 8
+number_of_collided_preambles = []
+collision_coefficient = []
+number_of_collided_request = []
+total_preambles_in_system = 54
+number_of_branches = []
 N = 50000
-T_a = 50
+time_of_burst_arrivals = 50
+delay_in_every_subtree = []
+successful_devices = []
 
 
 def g_t(i):
     alpha = 3
     beta = 4
-    return (pow(i, 2) * pow(T_a - i, 3))/(pow(T_a, 6) * random.betavariate(alpha, beta))
+    return (pow(i, 2) * pow(time_of_burst_arrivals - i, 3))/(pow(time_of_burst_arrivals, 6) * random.betavariate(alpha, beta))
 
 
 def integration(a, b, n):
@@ -34,11 +33,11 @@ def integration(a, b, n):
     return h * sum
 
 
-def get_distribution(T_a):
+def get_distribution(time_of_burst_arrivals):
     distribution = []
-    for t in range(T_a):
+    for t in range(time_of_burst_arrivals):
         v = integration(t, t+1, 5000)
-        # v, err = integrate.quad(g_t, a=t - 1, b=t, limit=100000)
+        # v, err = integrate.quad(g_t, a=t - 1, number_of_branumber_of_collided_requesthes=t, limit=100000)
         distribution.append(round(v*20*N))
     total_devices = sum(distribution)
     print(distribution)
@@ -47,7 +46,7 @@ def get_distribution(T_a):
 
 
 def first_access_attempt():
-    distibution_n_i = get_distribution(T_a)
+    distibution_n_i = get_distribution(time_of_burst_arrivals)
     success_probability = []
     idle_probability = []
     collision_probability = []
@@ -61,80 +60,89 @@ def first_access_attempt():
         successful_requests.append([])
         collided_preambles.append([])
         collided_requests.append([])
-    for i in range(T_a):
-        success_probability[i].append((distibution_n_i[i] / M) * pow(1 - 1 / M, distibution_n_i[i] - 1))
-        idle_probability[i].append(pow(1 - 1 / M, distibution_n_i[i]))
+    for i in range(time_of_burst_arrivals):
+        success_probability[i].append((distibution_n_i[i] / total_preambles_in_system) * pow(1 - 1 / total_preambles_in_system, distibution_n_i[i] - 1))
+        idle_probability[i].append(pow(1 - 1 / total_preambles_in_system, distibution_n_i[i]))
         collision_probability[i].append(1 - success_probability[i][0] - idle_probability[i][0])
-        successful_requests[i].append(math.ceil(M * success_probability[i][0]))
-        collided_preambles[i].append((round(M * collision_probability[i][0]), i))
-        collided_requests[i].append((distibution_n_i[i] - successful_requests[i][0], i))
-    return collided_preambles, collided_requests
+        successful_requests[i].append(math.ceil(total_preambles_in_system * success_probability[i][0]))
+        collided_preambles[i].append((round(total_preambles_in_system * collision_probability[i][0]), time_of_burst_arrivals))
+        collided_requests[i].append((distibution_n_i[i] - successful_requests[i][0], time_of_burst_arrivals))
+    return collided_preambles, collided_requests, successful_requests
 
 
 def dynamic_tree_splitting():
-    mc, nc = first_access_attempt()
+    number_of_collided_preambles, number_of_collided_request, successful_devices = first_access_attempt()
     for i in range(max_rao):
-        cc.append([])
-        b.append([])
-        T.append([])
-        g.append([])
-        G.append([])
+        collision_coefficient.append([])
+        number_of_branches.append([])
+        if number_of_collided_request[i][0][0] == 0:
+            delay_in_every_subtree.append(0)
+        else:
+            delay_in_every_subtree.append(12 * time_of_burst_arrivals)
         for k in range(k_max):
-            cc[i].append(-1)
-            b[i].append(0)
-            T[i].append(0)
-            g[i].append(0)
-            G[i].append(0)
-            mc[i].append((0, 0))
-            nc[i].append((0, 0))
-    # print(mc)
+            collision_coefficient[i].append(-1)
+            number_of_branches[i].append(0)
+            number_of_collided_preambles[i].append((0, 0))
+            number_of_collided_request[i].append((0, 0))
+    # print(number_of_collided_preambles)
     for i in range(max_rao):
         for k in range(k_max):
-            if mc[i][k][0] == 0:
+            if number_of_collided_preambles[i][k][0] == 0:
                 break
             else:
-                if mc[i][k][0] >= 1:
-                    cc[i][k] = math.floor(nc[i][k][0] / mc[i][k][0])
+                if number_of_collided_preambles[i][k][0] >= 1:
+                    collision_coefficient[i][k] = math.floor(number_of_collided_request[i][k][0] / number_of_collided_preambles[i][k][0])
                 else:
-                    cc[i][k] = 0
-                if cc[i][k] == 0:
+                    collision_coefficient[i][k] = 0
+                if collision_coefficient[i][k] == 0:
                     break
-                if M % cc[i][k] == 0:
-                    b[i][k] = math.floor(cc[i][k])
-                elif M % cc[i][k] > 0:
-                    b[i][k] = math.floor(cc[i][k] - 1)
+                if total_preambles_in_system % collision_coefficient[i][k] == 0:
+                    number_of_branches[i][k] = math.floor(collision_coefficient[i][k])
+                elif total_preambles_in_system % collision_coefficient[i][k] > 0:
+                    number_of_branches[i][k] = math.floor(collision_coefficient[i][k] - 1)
                 else:
-                    b[i][k] = 0
+                    number_of_branches[i][k] = 0
 
-                M_i_k = mc[i][k][0] * b[i][k]
-                L_i_k = math.ceil(M_i_k/M)
-                secondary_success_probability = (nc[i][k][0] / M_i_k) * pow(1 - 1 / M_i_k, nc[i][k][0] - 1)
-                secondary_idle_probability = pow(1 - 1 / M_i_k, nc[i][k][0])
+                total_preambles_for_each_step = number_of_collided_preambles[i][k][0] * number_of_branches[i][k]
+                delay_in_every_subtree[i] += 12 * (total_preambles_for_each_step/total_preambles_in_system)
+                length_of_level_k = math.ceil(total_preambles_for_each_step/total_preambles_in_system)
+                secondary_success_probability = (number_of_collided_request[i][k][0] / total_preambles_for_each_step) * pow(1 - 1 / total_preambles_for_each_step, number_of_collided_request[i][k][0] - 1)
+                secondary_idle_probability = pow(1 - 1 / total_preambles_for_each_step, number_of_collided_request[i][k][0])
                 secondary_collision_probability = 1 - secondary_success_probability - secondary_idle_probability
-                secondary_successful_devices = math.ceil(M_i_k * secondary_success_probability)
-                secondary_collided_preambles = math.floor(M_i_k * secondary_collision_probability)
+                secondary_successful_devices = math.ceil(total_preambles_for_each_step * secondary_success_probability)
+                secondary_collided_preambles = math.floor(total_preambles_for_each_step * secondary_collision_probability)
+                successful_devices[i].append(secondary_successful_devices)
                 if secondary_collided_preambles > 0:
-                    secondary_collided_devices = nc[i][k][0] - secondary_successful_devices
+                    secondary_collided_devices = number_of_collided_request[i][k][0] - secondary_successful_devices
                 else:
                     secondary_collided_devices = 0
-                    mc[i + 1][0] = (mc[i + 1][0][0], mc[i][k][1] + L_i_k)
-                    nc[i + 1][0] = (nc[i + 1][0][0], nc[i][k][1] + L_i_k)
-                # G[i][k + 1] = M/b[i][k]
-                mc[i][k + 1] = (secondary_collided_preambles, mc[i][k][1] + L_i_k)
-                nc[i][k + 1] = (secondary_collided_devices, nc[i][k][1] + L_i_k)
-                # for m in range(mc[i][k][0]):
-                #     if i <= T_a:
-                #         T[i][k] = i + T_a
+                    number_of_collided_preambles[i + 1][0] = (number_of_collided_preambles[i + 1][0][0], number_of_collided_preambles[i][k][1] + length_of_level_k)
+                    number_of_collided_request[i + 1][0] = (number_of_collided_request[i + 1][0][0], number_of_collided_request[i][k][1] + length_of_level_k)
+                # G[i][k + 1] = total_preambles_in_system/number_of_branumber_of_collided_requesthes[i][k]
+                number_of_collided_preambles[i][k + 1] = (secondary_collided_preambles, number_of_collided_preambles[i][k][1] + length_of_level_k)
+                number_of_collided_request[i][k + 1] = (secondary_collided_devices, number_of_collided_request[i][k][1] + length_of_level_k)
+            number_of_collided_preambles[i + 1][0] = (number_of_collided_preambles[i + 1][0][0], number_of_collided_preambles[i][k][1] + length_of_level_k + 1)
+            number_of_collided_request[i + 1][0] = (number_of_collided_request[i + 1][0][0], number_of_collided_request[i][k][1] + length_of_level_k + 1)
+                # for m in range(number_of_collided_preambles[i][k][0]):
+                #     if i <= time_of_burst_arrivals:
+                #         T[i][k] = i + time_of_burst_arrivals
                 #     else:
                 #         T[i][k] = i + 1
                     # for r in G[i][k]:
                     #     if len(r) < 1:
                     #         g[m] = r
-    print(mc)
-    print(nc)
+    print(number_of_collided_preambles)
+    print(number_of_collided_request)
     outage_devices = 0
     maximal_rao = 0
-    for i in range(len(nc)):
-        outage_devices = outage_devices + nc[i][len(nc[i])-1][0]
-        maximal_rao = max(nc[i][0][1], maximal_rao)
+    total_delay = 0
+    print(successful_devices)
+    sum_of_successful_devices = 0
+    for i in range(len(number_of_collided_request)):
+        outage_devices += number_of_collided_request[i][len(number_of_collided_request[i])-1][0]
+        maximal_rao = max(number_of_collided_request[i][0][1], maximal_rao)
+        total_delay += delay_in_every_subtree[i]
+        sum_of_successful_devices += sum(successful_devices[i])
+    mean_delay = total_delay/time_of_burst_arrivals
+    mean_throughput = sum_of_successful_devices/(total_preambles_in_system*total_delay)
     print(outage_devices, maximal_rao)
