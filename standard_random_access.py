@@ -23,41 +23,41 @@ def simulate_LTE_random_access(n, m, t):
     mean_throughput = successful_devices / t
     mean_delay = np.mean(device_delays[device_status == 1])
     return successful_devices, mean_throughput, mean_delay
+def graphs():
+    n = 500  # number of devices
+    m = 54  # number of random access channels
+    t = 100000  # total simulation time in ms
+    successful_devices_steps = []
+    throughput_steps = []
+    delay_steps = []
+    K = np.arange(1, 952, 50)
+    for k in K:
+        successful_devices, mean_throughput, mean_delay = simulate_LTE_random_access(k, m, t)
+        successful_devices_steps.append(successful_devices)
+        throughput_steps.append(mean_throughput)
+        delay_steps.append(mean_delay)
+        print("Number of successful devices:", successful_devices)
+        print("Mean throughput:", mean_throughput)
+        print("Mean delay for one device in ms:", mean_delay)
 
-n = 500  # number of devices
-m = 54  # number of random access channels
-t = 1000000  # total simulation time in ms
-successful_devices_steps = []
-throughput_steps = []
-delay_steps = []
-K = np.arange(1, 952, 50)
-for k in K:
-    successful_devices, mean_throughput, mean_delay = simulate_LTE_random_access(k, m, t)
-    successful_devices_steps.append(successful_devices)
-    throughput_steps.append(mean_throughput)
-    delay_steps.append(mean_delay)
-    print("Number of successful devices:", successful_devices)
-    print("Mean throughput:", mean_throughput)
-    print("Mean delay for one device in ms:", mean_delay)
-
-plt.figure(1)
-plt.plot(K, successful_devices_steps, label='devices', marker=".", linewidth=2, markersize=7, linestyle='-.')
-plt.xlabel('Number of devices')
-plt.ylabel('Number of successful devices')
-plt.grid(True)
-plt.legend()
-plt.show()
-plt.figure(2)
-plt.plot(K, throughput_steps, label='throughput', marker=".", linewidth=2, markersize=7, linestyle=':')
-plt.xlabel('Number of devices')
-plt.ylabel('Throughput')
-plt.grid(True)
-plt.legend()
-plt.show()
-plt.figure(3)
-plt.plot(K, delay_steps, label='delay', marker=".", linewidth=2, markersize=7, linestyle='--')
-plt.xlabel('Number of devices')
-plt.ylabel('Delay, ms')
-plt.grid(True)
-plt.legend()
-plt.show()
+    plt.figure(1)
+    plt.plot(K, successful_devices_steps, label='devices', marker=".", linewidth=2, markersize=7, linestyle='-.')
+    plt.xlabel('Number of devices')
+    plt.ylabel('Number of successful devices')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    plt.figure(2)
+    plt.plot(K, throughput_steps, label='throughput', marker=".", linewidth=2, markersize=7, linestyle=':')
+    plt.xlabel('Number of devices')
+    plt.ylabel('Throughput')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+    plt.figure(3)
+    plt.plot(K, delay_steps, label='delay', marker=".", linewidth=2, markersize=7, linestyle='--')
+    plt.xlabel('Number of devices')
+    plt.ylabel('Delay, ms')
+    plt.grid(True)
+    plt.legend()
+    plt.show()

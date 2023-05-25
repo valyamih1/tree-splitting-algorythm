@@ -3,22 +3,13 @@ import random
 from scipy import integrate
 # from scipy.stats import beta as bt
 
-max_rao = 50
-k_max = 8
-number_of_collided_preambles = []
-collision_coefficient = []
-number_of_collided_request = []
-total_preambles_in_system = 54
-number_of_branches = []
-N = 50000
-time_of_burst_arrivals = 50
-delay_in_every_subtree = []
-successful_devices = []
+
 
 
 def g_t(i):
     alpha = 3
     beta = 4
+    time_of_burst_arrivals = 50
     return (pow(i, 2) * pow(time_of_burst_arrivals - i, 3))/(pow(time_of_burst_arrivals, 6) * random.betavariate(alpha, beta))
 
 
@@ -33,20 +24,20 @@ def integration(a, b, n):
     return h * sum
 
 
-def get_distribution(time_of_burst_arrivals):
+def get_distribution(time_of_burst_arrivals, N):
     distribution = []
     for t in range(time_of_burst_arrivals):
         v = integration(t, t+1, 5000)
         # v, err = integrate.quad(g_t, a=t - 1, number_of_branumber_of_collided_requesthes=t, limit=100000)
         distribution.append(round(v*20*N))
     total_devices = sum(distribution)
-    print(distribution)
+    # print(distribution)
     print(total_devices)
-    return distribution
+    return distribution, total_devices
 
 
-def first_access_attempt():
-    distibution_n_i = get_distribution(time_of_burst_arrivals)
+def first_access_attempt(time_of_burst_arrivals, N, max_rao, total_preambles_in_system):
+    distibution_n_i, new_N = get_distribution(time_of_burst_arrivals, N)
     success_probability = []
     idle_probability = []
     collision_probability = []
@@ -67,11 +58,22 @@ def first_access_attempt():
         successful_requests[i].append(math.ceil(total_preambles_in_system * success_probability[i][0]))
         collided_preambles[i].append((round(total_preambles_in_system * collision_probability[i][0]), time_of_burst_arrivals))
         collided_requests[i].append((distibution_n_i[i] - successful_requests[i][0], time_of_burst_arrivals))
-    return collided_preambles, collided_requests, successful_requests
+    return collided_preambles, collided_requests, successful_requests, new_N
 
 
-def dynamic_tree_splitting():
-    number_of_collided_preambles, number_of_collided_request, successful_devices = first_access_attempt()
+def dynamic_tree_splitting(old_N):
+    max_rao = 50
+    k_max = 8
+    number_of_collided_preambles = []
+    collision_coefficient = []
+    number_of_collided_request = []
+    total_preambles_in_system = 54
+    number_of_branches = []
+    # N = 50000
+    time_of_burst_arrivals = 50
+    delay_in_every_subtree = []
+    successful_devices = []
+    number_of_collided_preambles, number_of_collided_request, successful_devices, N = first_access_attempt(time_of_burst_arrivals, old_N, max_rao,total_preambles_in_system)
     for i in range(max_rao):
         collision_coefficient.append([])
         number_of_branches.append([])
@@ -131,12 +133,12 @@ def dynamic_tree_splitting():
                     # for r in G[i][k]:
                     #     if len(r) < 1:
                     #         g[m] = r
-    print(number_of_collided_preambles)
-    print(number_of_collided_request)
+    # print(number_of_collided_preambles)
+    # print(number_of_collided_request)
     outage_devices = 0
     maximal_rao = 0
     total_delay = 0
-    print(successful_devices)
+    # print(successful_devices)
     sum_of_successful_devices = 0
     for i in range(len(number_of_collided_request)):
         outage_devices += number_of_collided_request[i][len(number_of_collided_request[i])-1][0]
@@ -144,5 +146,7 @@ def dynamic_tree_splitting():
         total_delay += delay_in_every_subtree[i]
         sum_of_successful_devices += sum(successful_devices[i])
     mean_delay = total_delay/time_of_burst_arrivals
-    mean_throughput = sum_of_successful_devices/(total_preambles_in_system*total_delay)
+    mean_throughput = (N - outage_devices)/(total_preambles_in_system*total_delay)
+    success_rate = 1 - (outage_devices / N)
     print(outage_devices, maximal_rao)
+    return mean_throughput, mean_delay, success_rate
