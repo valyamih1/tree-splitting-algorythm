@@ -90,4 +90,5 @@ def dts_rach_graphs():
 
 
 if __name__ == "__main__":
-    dts_rach_graphs()
+    # dts_rach_graphs()
+    sra.theory()

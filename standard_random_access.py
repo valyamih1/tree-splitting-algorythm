@@ -61,3 +61,29 @@ def graphs():
     plt.grid(True)
     plt.legend()
     plt.show()
+
+
+def theory():
+    number_of_devices = 30000
+    number_of_preambles = 54
+    M = np.arange(1, 301, 1)
+    p_0s = []
+    p_1s = []
+    p_2s = []
+    for number_of_devices in M:
+        p_0 = pow(1 - 1 / number_of_preambles, number_of_devices)
+        p_1 = (number_of_devices/number_of_preambles) * pow(1 - 1/number_of_preambles, number_of_devices - 1)
+        p_2 = 1 - p_0 - p_1
+        p_0s.append(number_of_preambles * p_1)
+        p_1s.append(number_of_preambles * (1 - p_0))
+        p_2s.append(number_of_preambles * p_2)
+
+    plt.figure(1)
+    plt.plot(M, p_0s, label='successful preambles', linewidth=2, markersize=7, linestyle='-.')
+    plt.plot(M, p_1s, label='all detected preambles', linewidth=2, markersize=7, linestyle='--')
+    plt.plot(M, p_2s, label='wasted preambles', linewidth=2, markersize=7, linestyle=':')
+    plt.xlabel('Number of devices')
+    plt.ylabel('Number of preambles')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
