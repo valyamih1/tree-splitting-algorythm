@@ -55,7 +55,7 @@ def tree_rach_graphs():
 
 
 def dts_rach_graphs():
-    K = np.arange(3000, 50007, 500)
+    K = np.arange(5000, 50007, 5000)
     throughputs = []
     delays = []
     rates = []
@@ -91,4 +91,5 @@ def dts_rach_graphs():
 
 if __name__ == "__main__":
     # dts_rach_graphs()
-    sra.theory()
+    th, delay, rate = DTS_RACH.dynamic_tree_splitting(50000)
+    # sra.graphs()

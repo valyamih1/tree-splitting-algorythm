@@ -18,6 +18,8 @@ def simulate_LTE_random_access(n, m, t):
                 same_channel = np.where(selections == selections[i])[0]
                 if len(same_channel) == 1:  # no other device selected the same channel
                     device_status[i] = 1  # the device is now connected
+                    device_delays[i] = time
+                else:
                     device_delays[i] += backoff + response_time + contention_resolution
     successful_devices = np.sum(device_status)
     mean_throughput = successful_devices / t
@@ -30,7 +32,7 @@ def graphs():
     successful_devices_steps = []
     throughput_steps = []
     delay_steps = []
-    K = np.arange(1, 952, 50)
+    K = np.arange(1, 506, 5)
     for k in K:
         successful_devices, mean_throughput, mean_delay = simulate_LTE_random_access(k, m, t)
         successful_devices_steps.append(successful_devices)

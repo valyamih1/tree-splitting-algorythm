@@ -4,8 +4,6 @@ from scipy import integrate
 # from scipy.stats import beta as bt
 
 
-
-
 def g_t(i):
     alpha = 3
     beta = 4
@@ -52,12 +50,18 @@ def first_access_attempt(time_of_burst_arrivals, N, max_rao, total_preambles_in_
         collided_preambles.append([])
         collided_requests.append([])
     for i in range(time_of_burst_arrivals):
-        success_probability[i].append((distibution_n_i[i] / total_preambles_in_system) * pow(1 - 1 / total_preambles_in_system, distibution_n_i[i] - 1))
-        idle_probability[i].append(pow(1 - 1 / total_preambles_in_system, distibution_n_i[i]))
+        success_probability[i].append((distibution_n_i[i] / total_preambles_in_system) * pow(1 - (1 / total_preambles_in_system), distibution_n_i[i] - 1))
+        idle_probability[i].append(pow(1 - (1 / total_preambles_in_system), distibution_n_i[i]))
         collision_probability[i].append(1 - success_probability[i][0] - idle_probability[i][0])
         successful_requests[i].append(math.ceil(total_preambles_in_system * success_probability[i][0]))
-        collided_preambles[i].append((round(total_preambles_in_system * collision_probability[i][0]), time_of_burst_arrivals))
+        # collided_preambles[i].append(((total_preambles_in_system * collision_probability[i][0]), time_of_burst_arrivals))
         collided_requests[i].append((distibution_n_i[i] - successful_requests[i][0], time_of_burst_arrivals))
+        if collided_requests[i][0][0] > 0:
+            collided_preambles[i].append(
+                (math.ceil(total_preambles_in_system * collision_probability[i][0]), time_of_burst_arrivals))
+        else:
+            collided_preambles[i].append(
+                (math.floor(total_preambles_in_system * collision_probability[i][0]), time_of_burst_arrivals))
     return collided_preambles, collided_requests, successful_requests, new_N
 
 
@@ -93,7 +97,10 @@ def dynamic_tree_splitting(old_N):
                 break
             else:
                 if number_of_collided_preambles[i][k][0] >= 1:
-                    collision_coefficient[i][k] = math.floor(number_of_collided_request[i][k][0] / number_of_collided_preambles[i][k][0])
+                    # if number_of_collided_preambles[i][k][0] > 54:
+                    #     collision_coefficient[i][k] = math.ceil(number_of_collided_request[i][k][0] / 54)
+                    # else:
+                    collision_coefficient[i][k] = math.ceil(number_of_collided_request[i][k][0] / number_of_collided_preambles[i][k][0])
                 else:
                     collision_coefficient[i][k] = 0
                 if collision_coefficient[i][k] == 0:
@@ -101,7 +108,9 @@ def dynamic_tree_splitting(old_N):
                 if total_preambles_in_system % collision_coefficient[i][k] == 0:
                     number_of_branches[i][k] = math.floor(collision_coefficient[i][k])
                 elif total_preambles_in_system % collision_coefficient[i][k] > 0:
-                    number_of_branches[i][k] = math.floor(collision_coefficient[i][k] - 1)
+                    while total_preambles_in_system % collision_coefficient[i][k] > 0:
+                        collision_coefficient[i][k] += 1
+                    number_of_branches[i][k] = math.floor(collision_coefficient[i][k])
                 else:
                     number_of_branches[i][k] = 0
 
@@ -123,8 +132,9 @@ def dynamic_tree_splitting(old_N):
                 # G[i][k + 1] = total_preambles_in_system/number_of_branumber_of_collided_requesthes[i][k]
                 number_of_collided_preambles[i][k + 1] = (secondary_collided_preambles, number_of_collided_preambles[i][k][1] + length_of_level_k)
                 number_of_collided_request[i][k + 1] = (secondary_collided_devices, number_of_collided_request[i][k][1] + length_of_level_k)
-            number_of_collided_preambles[i + 1][0] = (number_of_collided_preambles[i + 1][0][0], number_of_collided_preambles[i][k][1] + length_of_level_k + 1)
-            number_of_collided_request[i + 1][0] = (number_of_collided_request[i + 1][0][0], number_of_collided_request[i][k][1] + length_of_level_k + 1)
+            if k == k_max -1:
+                number_of_collided_preambles[i + 1][0] = (number_of_collided_preambles[i + 1][0][0], number_of_collided_preambles[i][k][1] + length_of_level_k + 1)
+                number_of_collided_request[i + 1][0] = (number_of_collided_request[i + 1][0][0], number_of_collided_request[i][k][1] + length_of_level_k + 1)
                 # for m in range(number_of_collided_preambles[i][k][0]):
                 #     if i <= time_of_burst_arrivals:
                 #         T[i][k] = i + time_of_burst_arrivals
@@ -148,5 +158,5 @@ def dynamic_tree_splitting(old_N):
     mean_delay = total_delay/time_of_burst_arrivals
     mean_throughput = (N - outage_devices)/(total_preambles_in_system*total_delay)
     success_rate = 1 - (outage_devices / N)
-    print(outage_devices, maximal_rao)
+    print(outage_devices, maximal_rao, success_rate)
     return mean_throughput, mean_delay, success_rate
