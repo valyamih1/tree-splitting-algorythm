@@ -63,6 +63,7 @@ def dts_rach_graphs(kmax):
     sra_delays = []
     sra_transm = []
     sra_thrs = []
+    sra_thrs_paper = [0.08, 0.065, 0.055, 0.049, 0.0482, 0.048, 0.0479, 0.0478, 0.04775, 0.0477]
     # throughputs_100 = []
     # delays_100 = []
     # rates_100 = []
@@ -104,7 +105,7 @@ def dts_rach_graphs(kmax):
     # plt.ylim(0, 0.4)
     # plt.xlim(5000, 50000)
     plt.plot(K, throughputs, label='DTS Mean Throughput', marker=".", linewidth=2, markersize=7)
-    plt.plot(K, sra_thrs, label='SRA Mean Throughput', marker=".", linewidth=2, markersize=7, linestyle='--')
+    plt.plot(K, sra_thrs_paper, label='SRA Mean Throughput', marker=".", linewidth=2, markersize=7, linestyle='--')
     plt.xlabel('Number of devices')
     plt.ylabel('Mean Throughput')
     plt.grid(True)

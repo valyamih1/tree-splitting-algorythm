@@ -87,14 +87,16 @@ def dynamic_tree_splitting(old_N, kmax):
     max_rao = 50
     k_max = kmax - 1
     collision_coefficient = []
-    total_preambles_in_system = 54
+    total_preambles_in_system = 64
     number_of_branches = []
+    throughput = []
     # N = 50000
     time_of_burst_arrivals = 50
     delay_in_every_subtree = []
     sra_preamb, sra_collisons, sra_success, sra_N, sra_exact_devices = my_sra(1000000, time_of_burst_arrivals, old_N, max_rao, total_preambles_in_system)
     number_of_collided_preambles, number_of_collided_request, successful_devices, N, exact_devices = first_access_attempt(time_of_burst_arrivals, old_N, max_rao,total_preambles_in_system)
     for i in range(max_rao):
+        throughput.append(0)
         collision_coefficient.append([])
         number_of_branches.append([])
         if number_of_collided_request[i][0][0] == 0:
@@ -108,6 +110,7 @@ def dynamic_tree_splitting(old_N, kmax):
             number_of_collided_request[i].append((0, 0))
     # print(number_of_collided_preambles)
     for i in range(max_rao):
+        countr = 0
         for k in range(k_max):
             if number_of_collided_preambles[i][k][0] == 0:
                 break
@@ -121,6 +124,7 @@ def dynamic_tree_splitting(old_N, kmax):
                     collision_coefficient[i][k] = 0
                 if collision_coefficient[i][k] == 0:
                     break
+                countr += 1
                 if total_preambles_in_system % collision_coefficient[i][k] == 0:
                     number_of_branches[i][k] = math.floor(collision_coefficient[i][k])
                 elif total_preambles_in_system % collision_coefficient[i][k] > 0:
@@ -133,6 +137,7 @@ def dynamic_tree_splitting(old_N, kmax):
                 total_preambles_for_each_step = number_of_collided_preambles[i][k][0] * number_of_branches[i][k]
                 delay_in_every_subtree[i] += 22 * (total_preambles_for_each_step/total_preambles_in_system)
                 length_of_level_k = math.ceil(total_preambles_for_each_step/total_preambles_in_system)
+                throughput[i] += number_of_collided_request[i][k][0] / length_of_level_k
                 # delay_in_every_subtree[i] += math.ceil(total_preambles_for_each_step/total_preambles_in_system)
                 secondary_success_probability = (number_of_collided_request[i][k][0] / total_preambles_for_each_step) * pow(1 - 1 / total_preambles_for_each_step, number_of_collided_request[i][k][0] - 1)
                 secondary_idle_probability = pow(1 - 1 / total_preambles_for_each_step, number_of_collided_request[i][k][0])
@@ -170,6 +175,8 @@ def dynamic_tree_splitting(old_N, kmax):
                     # for r in G[i][k]:
                     #     if len(r) < 1:
                     #         g[m] = r
+        if countr > 0:
+            throughput[i] = throughput[i]/countr
     # print(number_of_collided_preambles)
     # print(number_of_collided_request)
     outage_devices = 0
@@ -178,8 +185,9 @@ def dynamic_tree_splitting(old_N, kmax):
     # print(successful_devices)
     sum_of_successful_devices = 0
     transmissions = 0
-
+    thr = 0
     for i in range(len(number_of_collided_request)):
+        thr += throughput[i]
         outage_devices += number_of_collided_request[i][len(number_of_collided_request[i])-1][0]
         maximal_rao = max(number_of_collided_request[i][0][1], maximal_rao)
         total_delay += delay_in_every_subtree[i]
@@ -191,9 +199,11 @@ def dynamic_tree_splitting(old_N, kmax):
             print(exact_devices[i])
     if total_delay == 0:
         total_delay = 50
+    # print(throughput)
+    print(thr/maximal_rao)
     mean_transmissions = transmissions/sum_of_successful_devices
     mean_delay = total_delay/time_of_burst_arrivals
-    mean_throughput = 26*(N - outage_devices)/(total_preambles_in_system*total_delay)
+    mean_throughput = 27*(N - outage_devices)/(total_preambles_in_system*total_delay)
     success_rate = round(1 - (outage_devices / N), 5)
     sra_outage_devices = 0
     sra_delay = 0
@@ -211,7 +221,7 @@ def dynamic_tree_splitting(old_N, kmax):
     sra_success_rate = round(1-(sra_outage_devices/len(sra_exact_devices)), 5)
     sra_mean_delay = sra_delay/len(sra_exact_devices)
 
-    print(outage_devices,mean_delay, mean_throughput, maximal_rao, success_rate, mean_transmissions, sra_success_rate, sra_mean_delay, sra_mean_transm, sra_throughput)
+    print(outage_devices, sra_outage_devices, mean_delay, mean_throughput, maximal_rao, success_rate, mean_transmissions, sra_success_rate, sra_mean_delay, sra_mean_transm, sra_throughput)
     return mean_throughput, mean_delay, success_rate, mean_transmissions, sra_success_rate, sra_mean_delay, sra_mean_transm, sra_throughput
 
 
