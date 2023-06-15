@@ -25,7 +25,7 @@ def theory(N, q, M, G):
     print(f'C = {C}')
     print(f'R = {R}')
     print(f'T = {T}')
-
+    return R
 
 def tree_realisation(future_contentions, q_ary, G, num_of_used_preambs, trao, num_of_trao, resolved_users, new_num_of_trao):
     new_resolve = []
@@ -122,7 +122,9 @@ def tree_splitting(total_users, q_ary, total_preambs):
         mean_time += resolved_users[i][0][1]
         if resolved_users[i][0][1] >= max_time:
             max_time = resolved_users[i][0][1]
-
+    ta_6_rate = [0.9996, 0.9992, 0.99933, 0.9989, 0.9984, 0.99853, 0.99794, 0.99715, 0.99693, 0.9964]
+    ta_9_rate = [1, 1, 1, 1, 0.99992, 0.99993, 0.99994, 0.9999, 0.99978, 0.99976]
+    ta_18_rate = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     # print(f'\ntotal users = {total_users} \nq-ary = {q_ary} \ntotal number of TRAO = {num_of_trao} \n'
     #       f'mean number of transmission = {mean_time / total_users} \nmax transmissions = {max_time} \n---------------')
     return mean_time / total_users
